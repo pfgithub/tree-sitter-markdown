@@ -26,6 +26,10 @@ unsigned MinimizedInlineDelimiter::deserialize(const unsigned char *buffer) {
   return 2;
 }
 
+void MinimizedInlineDelimiter::print() const {
+  fprintf(stderr, "(%s y=%d l=%d)", sym_nam(sym_), yes_, len_);
+}
+
 TokenType MinimizedInlineDelimiter::tkn_typ(LexedCharacter cur_chr, LexedCharacter lka_chr) const {
   if (sym_ == SYM_BSL_LBK) {
     if (lka_chr == '\\') return TKN_HRD_LBK;
@@ -192,6 +196,13 @@ unsigned MinimizedInlineDelimiterList::deserialize(const unsigned char *buffer) 
   return i;
 }
 
+void MinimizedInlineDelimiterList::print() const {
+  for (ConstIterator itr = list_.begin(), bgn = list_.begin(), end = list_.end(); itr != end; itr++) {
+    if (itr != bgn) fprintf(stderr, ", ");
+    itr->print();
+  }
+}
+
 //==============================================================================
 
 bool InlineDelimiter::yes() const { return yes_; }
@@ -216,6 +227,10 @@ InlineDelimiter::InlineDelimiter(const bool yes, const Symbol sym, const LexedPo
 
 MinimizedInlineDelimiter InlineDelimiter::to_min() const { return MinimizedInlineDelimiter(yes_, sym_, len_); }
 
+void InlineDelimiter::print() const {
+  fprintf(stderr, "(%s y=%d l=%d i=%d r=%d c=%d e=%d d=%d)", sym_nam(sym_), yes_, len_, pos_.idx(), pos_.row(), pos_.col(), end_dlm_ != NULL_PTR, ctm_dat_);
+}
+
 //==============================================================================
 
 bool InlineDelimiterList::empty() const { return list_.empty(); }
@@ -233,6 +248,13 @@ void InlineDelimiterList::transfer_to(MinimizedInlineDelimiterList &minimized_li
   while (!empty()) {
     minimized_list.push_back(front().to_min());
     pop_front();
+  }
+}
+
+void InlineDelimiterList::print() const {
+  for (ConstIterator itr = list_.begin(), bgn = list_.begin(), end = list_.end(); itr != end; itr++) {
+    if (itr != bgn) fprintf(stderr, ", ");
+    itr->print();
   }
 }
 
