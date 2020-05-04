@@ -13,17 +13,23 @@ MinimizedInlineDelimiter::MinimizedInlineDelimiter(const bool yes, const Symbol 
 
 unsigned MinimizedInlineDelimiter::serialize(unsigned char *buffer) const {
   assert(is_inl_sym(sym_));
-  assert(sym_ <= 0b1111111);
-  assert(len_ <= 0b11111111);
-  buffer[0] = (sym_ << 1) | yes_;
-  buffer[1] = len_;
-  return 2;
+  assert(sym_ <= 0b11111111);
+  // assert(len_ <= 0b11111111); // fails
+  buffer[0] = yes_;
+  buffer[1] = sym_;
+  buffer[2] = 0;
+  buffer[3] = 0;
+  buffer[4] = len_ & 255;
+  buffer[5] = (len_ >> 8) & 255;
+  buffer[6] = (len_ >> 16) & 255;
+  buffer[7] = (len_ >> 24) & 255;
+  return 8;
 }
 unsigned MinimizedInlineDelimiter::deserialize(const unsigned char *buffer) {
-  yes_ = buffer[0] & 1;
-  sym_ = static_cast<Symbol>(buffer[0] >> 1);
-  len_ = buffer[1];
-  return 2;
+  yes_ = buffer[0];
+  sym_ = static_cast<Symbol>(buffer[1]);
+  len_ = buffer[4] + (buffer[5] << 8) + (buffer[6] << 16) + (buffer[7] << 24);
+  return 8;
 }
 
 TokenType MinimizedInlineDelimiter::tkn_typ(LexedCharacter cur_chr, LexedCharacter lka_chr) const {
